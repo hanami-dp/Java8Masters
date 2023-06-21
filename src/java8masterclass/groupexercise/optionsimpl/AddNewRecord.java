@@ -39,7 +39,7 @@ public class AddNewRecord implements CommandAction {
 
         boolean validHiringDate;
         do {
-            System.out.printf(ENTER_EMPLOYEE, "Hiring Date");
+            System.out.printf(ENTER_EMPLOYEE, "Hiring Date"); // todo: add format
             employeeHiringDate = input.next();
             validHiringDate = isValidDate(employeeHiringDate);
             if (!validHiringDate) {
@@ -47,7 +47,7 @@ public class AddNewRecord implements CommandAction {
             }
         } while (!validHiringDate);
 
-        Employee newEmployee = new Employee(employeeNumber, employeeFirstName, employeeMiddleName, employeeLastName, employeeHiringDate);
+        Employee newEmployee = new Employee(employeeNumber, employeeFirstName, employeeMiddleName, employeeLastName, null); // TODO: update handling of date
         employees.add(newEmployee);
         newEmployee.printInfo();
     }
