@@ -3,52 +3,108 @@ package java8masterclass.groupexercise.optionsimpl;
 import java8masterclass.groupexercise.CommandAction;
 import java8masterclass.groupexercise.Employee;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class AddNewRecord implements CommandAction {
 
-    private static final String ENTER_EMPLOYEE = "Enter Employee %s: ";
+  private static final String ENTER_EMPLOYEE = "Enter %s: ";
 
-    @Override
-    public void doAction(List<Employee> employees) {
-        Integer employeeNumber = null;
-        String employeeHiringDate;
-        String strEmpNumber;
-        boolean validEmpNumber;
+  @Override
+  public void doAction(List<Employee> employees) {
+    Integer employeeNumber = getValidEmployeeNumber(employees);
 
-        do {
-            System.out.print("\nEnter Number: ");
-            strEmpNumber = input.next();
-            validEmpNumber = isValidEmployeeNumber(strEmpNumber);
+    System.out.printf(ENTER_EMPLOYEE, "First Name");
+    String employeeFirstName = input.next();
+    System.out.printf(ENTER_EMPLOYEE, "Middle Name");
+    String employeeMiddleName = input.next();
+    System.out.printf(ENTER_EMPLOYEE, "Last Name");
+    String employeeLastName = input.next();
 
-            if (validEmpNumber) {
-                employeeNumber = Integer.valueOf(strEmpNumber);
-                if (employees.stream().map(Employee::getEmployeeNumber).anyMatch(employeeNumber::equals)){
-                    System.out.println("Invalid entry. Employee number already exist. Try again.");
-                    validEmpNumber = false;
-                }
-            }
-        } while (!validEmpNumber);
+    LocalDate employeeHiringDate = getHiringDate();
+    createAndPrintEmployee(
+        employees,
+        employeeNumber,
+        employeeHiringDate,
+        employeeFirstName,
+        employeeMiddleName,
+        employeeLastName);
+  }
 
-        System.out.printf(ENTER_EMPLOYEE, "First Name");
-        String employeeFirstName = input.next();
-        System.out.printf(ENTER_EMPLOYEE, "Middle Name");
-        String employeeMiddleName = input.next();
-        System.out.printf(ENTER_EMPLOYEE, "Last Name");
-        String employeeLastName = input.next();
+  private void createAndPrintEmployee(
+      List<Employee> employees,
+      Integer employeeNumber,
+      LocalDate employeeHiringDate,
+      String employeeFirstName,
+      String employeeMiddleName,
+      String employeeLastName) {
 
-        boolean validHiringDate;
-        do {
-            System.out.printf(ENTER_EMPLOYEE, "Hiring Date"); // todo: add format
-            employeeHiringDate = input.next();
-            validHiringDate = isValidDate(employeeHiringDate);
-            if (!validHiringDate) {
-                System.out.println("Invalid entry. Try again.");
-            }
-        } while (!validHiringDate);
+    Employee newEmployee =
+        new Employee(
+            employeeNumber,
+            employeeFirstName,
+            employeeMiddleName,
+            employeeLastName,
+            employeeHiringDate);
+    employees.add(newEmployee);
 
-        Employee newEmployee = new Employee(employeeNumber, employeeFirstName, employeeMiddleName, employeeLastName, null); // TODO: update handling of date
-        employees.add(newEmployee);
-        newEmployee.printInfo();
-    }
+    printEmployeeInfo(newEmployee);
+  }
+
+  private Integer getValidEmployeeNumber(List<Employee> employees) {
+    Integer employeeNumber = null;
+    String strEmpNumber;
+    boolean validEmpNumber;
+
+    do {
+      System.out.print("\nEnter Employee Number: ");
+      strEmpNumber = input.next();
+      validEmpNumber = isValidEmployeeNumber(strEmpNumber);
+
+      if (validEmpNumber) {
+        employeeNumber = Integer.valueOf(strEmpNumber);
+        if (employees.stream().map(Employee::getEmployeeNumber).anyMatch(employeeNumber::equals)) {
+          System.out.println("Invalid entry. Employee number already exist. Try again.");
+          validEmpNumber = false;
+        }
+      }
+    } while (!validEmpNumber);
+
+    return employeeNumber;
+  }
+
+  private LocalDate getHiringDate() {
+    String employeeHiringDate;
+    boolean validHiringDate;
+    LocalDate hiredDate = null;
+    do {
+      System.out.printf(ENTER_EMPLOYEE, "Date Hired (yyyy-MM-dd)");
+      employeeHiringDate = input.next();
+      validHiringDate = isValidDate(employeeHiringDate);
+
+      if (!validHiringDate) {
+        System.out.println("Invalid entry. Try again.");
+      } else {
+        hiredDate = parseStringDateToLocalDate(employeeHiringDate);
+        if (isFutureDate(hiredDate)) {
+          validHiringDate = false;
+          System.out.println("Invalid date. Future date is not allowed.");
+        }
+      }
+    } while (!validHiringDate);
+    return hiredDate;
+  }
+
+  public void printEmployeeInfo(Employee newEmployee) {
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy hh:mm:ss a");
+    System.out.println(
+        "\n\nEmployee record added successfully: "
+            + LocalDateTime.now().format(dateTimeFormatter));
+    System.out.println("Number: " + newEmployee.getEmployeeNumber());
+    System.out.println("Name: " + newEmployee.getFullName());
+    System.out.println(
+        "Date Hired: " + formatDateMMMddyyyy(newEmployee.getHiringDate().toString()) + "\n");
+  }
 }
