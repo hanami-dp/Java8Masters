@@ -13,24 +13,49 @@ import java.util.stream.Collectors;
 
 public class ListAllEmployees implements CommandAction {
 
-  private Option[] sortActions;
-
   @Override
   public void doAction(List<Employee> employees) throws NoSuchFieldException {
     printSortAction();
-    System.out.print("\nSelect action: ");
-    int sortSelection = input.nextInt();
-    if (sortSelection == -1) {
-      System.out.println();
-    } else {
-      System.out.println("Choose an action");
+    boolean validSortSelection;
+    do {
+      System.out.print("\nSelect action: ");
+      int sortSelection = input.nextInt();
+      validSortSelection = isValidSortSelection(sortSelection);
 
-      employees = sort(employees, sortSelection);
-      printEmployees(employees);
-    }
+      if (validSortSelection) {
+        if (sortSelection == -1) {
+          System.out.println();
+        } else {
+          printOrderByAction();
+          boolean validOrderBySelection;
+
+          do {
+            System.out.print("\nSelect action: ");
+            int orderBySelection = input.nextInt();
+            validOrderBySelection = isValidOrderBySelection(orderBySelection);
+
+            if (validOrderBySelection) {
+              if (orderBySelection == -1) {
+                System.out.println();
+                validSortSelection = false;
+                printSortAction();
+              } else {
+                employees = sort(employees, sortSelection, orderBySelection);
+                printEmployees(employees);
+              }
+
+            } else {
+              System.out.println("Invalid entry. Try again.");
+            }
+          } while (!validOrderBySelection);
+        }
+      } else {
+        System.out.println("Invalid entry. Try again.");
+      }
+    } while (!validSortSelection);
   }
 
-  private List<Employee> sort(List<Employee> employees, int sortSelection) {
+  private List<Employee> sort(List<Employee> employees, int sortSelection, int orderBySelection) {
 
     Comparator<Employee> employeeComparator = null;
     List<Employee> sorted;
@@ -48,11 +73,16 @@ public class ListAllEmployees implements CommandAction {
         employeeComparator = Comparator.comparing(Employee::getHiringDate);
         break;
       default:
-        System.out.println("Invalid choice. Displaying employees without sorting.");
+        System.out.println("Displaying employees without sorting.");
     }
 
     if (employeeComparator != null) {
-      sorted = employees.stream().sorted(employeeComparator).collect(Collectors.toList());
+      if (orderBySelection == 2) {
+        sorted =
+            employees.stream().sorted(employeeComparator.reversed()).collect(Collectors.toList());
+      } else {
+        sorted = employees.stream().sorted(employeeComparator).collect(Collectors.toList());
+      }
     } else {
       sorted = employees;
     }
@@ -64,7 +94,29 @@ public class ListAllEmployees implements CommandAction {
     TypeAndRepeatingAnnotations typeAndRepeatingAnnotations = new TypeAndRepeatingAnnotations();
     Class<?> c = typeAndRepeatingAnnotations.getClass();
     Field fd = c.getDeclaredField("sortActions");
-    sortActions = fd.getAnnotationsByType(Option.class);
+    Option[] sortActions = fd.getAnnotationsByType(Option.class);
     Arrays.stream(sortActions).forEach(sortAction -> System.out.println(sortAction.name()));
+  }
+
+  private void printOrderByAction() throws NoSuchFieldException {
+    System.out.println("\nChoose an action");
+    TypeAndRepeatingAnnotations typeAndRepeatingAnnotations = new TypeAndRepeatingAnnotations();
+    Class<?> c = typeAndRepeatingAnnotations.getClass();
+    Field fd = c.getDeclaredField("orderByActions");
+    Option[] orderByActions = fd.getAnnotationsByType(Option.class);
+    Arrays.stream(orderByActions)
+        .forEach(orderByAction -> System.out.println(orderByAction.name()));
+  }
+
+  private boolean isValidSortSelection(int sortingSelection) {
+    return sortingSelection == -1
+        || sortingSelection == 1
+        || sortingSelection == 2
+        || sortingSelection == 3
+        || sortingSelection == 4;
+  }
+
+  private boolean isValidOrderBySelection(int orderBySelection) {
+    return orderBySelection == -1 || orderBySelection == 1 || orderBySelection == 2;
   }
 }

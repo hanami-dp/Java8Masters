@@ -1,7 +1,6 @@
 package java8masterclass.groupexercise;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class Employee {
 
@@ -25,8 +24,6 @@ public class Employee {
   private String middleName;
 
   private String lastName;
-
-  private String fullName;
 
   private LocalDate hiringDate;
 
@@ -60,10 +57,4 @@ public class Employee {
     return value == null ? "" : value;
   }
 
-  public void printInfo() {
-    System.out.println("Employee record added successfully: " + LocalDateTime.now());
-    System.out.println("Number: " + employeeNumber);
-    System.out.println("Name: " + getFullName());
-    System.out.println("Date Hired: " + hiringDate + "\n");
-  }
 }

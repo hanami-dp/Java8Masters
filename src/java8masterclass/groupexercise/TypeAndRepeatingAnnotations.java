@@ -19,10 +19,8 @@ public class TypeAndRepeatingAnnotations {
   private String sortActions;
 
   @Option(name = "[1] Search By Employee Number")
-  @Option(name = "[2] Search By First Name")
-  @Option(name = "[3] Search By Middle Name")
-  @Option(name = "[4] Search By Last Name")
-  @Option(name = "[5] Search By Hiring Date")
+  @Option(name = "[2] Search Name")
+  @Option(name = "[3] Search By Hiring Date")
   @Option(name = "[-1] Back")
   private String searchActions;
 
@@ -30,4 +28,9 @@ public class TypeAndRepeatingAnnotations {
   @Option(name = "[2] Not Encoded")
   @Option(name = "[-1] Back")
   private String encodingActions;
+
+  @Option(name = "[1] Ascending")
+  @Option(name = "[2] Descending")
+  @Option(name = "[-1] Back")
+  private String orderByActions;
 }

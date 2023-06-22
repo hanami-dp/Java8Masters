@@ -30,46 +30,13 @@ public class ExportToFile implements CommandAction {
         if (encodingSelection == -1) {
           System.out.println();
         } else if (encodingSelection == 1 || encodingSelection == 2) {
-          AtomicBoolean success = new AtomicBoolean(false);
-          do {
-            System.out.print("Enter Filename: ");
-            String fileName = input.next();
-            boolean isFileExists = isFileExists(fileName);
-            boolean isEncoded = encodingSelection == 1;
-
-            try (BufferedWriter writer = getWriter(fileName, isFileExists)) {
-
-              executeWriteToFile(
-                      employees, encodingSelection, success, fileName, isFileExists, isEncoded, writer);
-
-              System.out.printf("Records exported successfully to file %s.%n%n", fileName);
-              success.set(true);
-            } catch (IOException e) {
-              success.set(false);
-              System.out.printf("Exporting of file %s has failed.%n%n", fileName);
-            }
-          } while (!success.get());
+          processExport(employees, encodingSelection);
         }
       } else {
         System.out.println("Invalid entry. Try again.");
       }
 
     } while (!isValidSelection);
-  }
-
-  private boolean isValidSelection(int encodingSelection) {
-    return encodingSelection == -1 || encodingSelection == 1 || encodingSelection == 2;
-  }
-
-  private BufferedWriter getWriter(String fileName, boolean isFileExists) throws IOException {
-    return isFileExists
-        ? new BufferedWriter(new FileWriter(fileName, true))
-        : new BufferedWriter(new FileWriter(fileName));
-  }
-
-  private boolean isFileExists(String fileName) {
-    File f = new File(fileName);
-    return f.exists() && !f.isDirectory();
   }
 
   private void executeWriteToFile(
@@ -83,7 +50,8 @@ public class ExportToFile implements CommandAction {
       throws IOException {
 
     if (encodingSelection == 2 && !isFileExists) {
-      writer.write(String.format("%-25s %-30s %-25s%n", "Employee Number", "Name", "Date Hired"));
+      writer.write(
+          String.format("%-25s %-30s %-25s%n", "Employee Number", "Employee Name", "Date Hired"));
     }
     employees.stream()
         .forEach(
@@ -94,7 +62,7 @@ public class ExportToFile implements CommandAction {
                         "%-25s %-30s %-25s%n",
                         employee.getEmployeeNumber(),
                         employee.getFullName(),
-                        formatDate(employee.getHiringDate().toString()));
+                        formatDateMMMddyyyy(employee.getHiringDate().toString()));
                 if (isEncoded) {
                   writer.write(Base64.getEncoder().encodeToString(employeeInfo.getBytes()));
                 } else {
@@ -107,6 +75,21 @@ public class ExportToFile implements CommandAction {
             });
   }
 
+  private BufferedWriter getWriter(String fileName, boolean isFileExists) throws IOException {
+    return isFileExists
+        ? new BufferedWriter(new FileWriter(fileName, true))
+        : new BufferedWriter(new FileWriter(fileName));
+  }
+
+  private boolean isFileExists(String fileName) {
+    File f = new File(fileName);
+    return f.exists() && !f.isDirectory();
+  }
+
+  private boolean isValidSelection(int encodingSelection) {
+    return encodingSelection == -1 || encodingSelection == 1 || encodingSelection == 2;
+  }
+
   private void printEncodingAction() throws NoSuchFieldException {
     System.out.println("\nChoose an action");
     TypeAndRepeatingAnnotations typeAndRepeatingAnnotations = new TypeAndRepeatingAnnotations();
@@ -114,5 +97,27 @@ public class ExportToFile implements CommandAction {
     Field fd = c.getDeclaredField("encodingActions");
     Option[] encodingActions = fd.getAnnotationsByType(Option.class);
     Arrays.stream(encodingActions).forEach(sortAction -> System.out.println(sortAction.name()));
+  }
+
+  private void processExport(List<Employee> employees, int encodingSelection) {
+    AtomicBoolean success = new AtomicBoolean(false);
+    do {
+      System.out.print("Enter Filename: ");
+      String fileName = input.next();
+      boolean isFileExists = isFileExists(fileName);
+      boolean isEncoded = encodingSelection == 1;
+
+      try (BufferedWriter writer = getWriter(fileName, isFileExists)) {
+
+        executeWriteToFile(
+            employees, encodingSelection, success, fileName, isFileExists, isEncoded, writer);
+
+        System.out.printf("Records exported successfully to file %s.%n%n", fileName);
+        success.set(true);
+      } catch (IOException e) {
+        success.set(false);
+        System.out.printf("Exporting of file %s has failed.%n%n", fileName);
+      }
+    } while (!success.get());
   }
 }

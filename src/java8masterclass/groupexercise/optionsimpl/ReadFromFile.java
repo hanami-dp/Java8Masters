@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +29,7 @@ public class ReadFromFile implements CommandAction {
       AtomicInteger row = new AtomicInteger(1);
       System.out.print("\nEnter filename: ");
       fileName = input.next();
+
       try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
         String[] data = br.lines().toArray(String[]::new);
 
@@ -79,18 +79,18 @@ public class ReadFromFile implements CommandAction {
   }
 
   private LocalDate getHiringDate(String[] employeeData) {
-    LocalDate date;
+    LocalDate hiredDate;
     try {
-      String hireDate = employeeData[4].trim() + "," + employeeData[5];
-      date = LocalDate.parse(hireDate, DATE_TIME_FORMATTER);
-      if (isFutureDate(date)) {
+      String concatenatedDate = employeeData[4].trim() + "," + employeeData[5];
+      hiredDate = LocalDate.parse(concatenatedDate, DATE_TIME_FORMATTER_MMMDDYYYY);
+      if (isFutureDate(hiredDate)) {
         throw new IllegalArgumentException(
             "Invalid date. Future date is not allowed. Found at row");
       }
     } catch (DateTimeParseException | IndexOutOfBoundsException e) {
       throw new IllegalArgumentException(String.format(INCOMPLETE_INPUT_MESSAGE));
     }
-    return date;
+    return hiredDate;
   }
 
   private int getEmployeeNumber(
@@ -127,10 +127,5 @@ public class ReadFromFile implements CommandAction {
       throw new IllegalArgumentException(String.format(INCOMPLETE_INPUT_MESSAGE));
     }
     return name.trim();
-  }
-
-  public static boolean isFutureDate(LocalDate inputDate) {
-    LocalDate localDate = LocalDate.now(ZoneId.systemDefault());
-    return inputDate.isAfter(localDate);
   }
 }
